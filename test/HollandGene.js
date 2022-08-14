@@ -1,0 +1,38 @@
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
+const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
+
+describe("HollandGene contract", function () {
+  async function deployTokenFixture() {
+    const HollandGene = await ethers.getContractFactory("HollandGene");
+    const [owner, addr1, addr2] = await ethers.getSigners();
+
+    const hardhatToken = await HollandGene.deploy(
+      'HollandGene',
+      'HG',
+      'ipfs//QmZcZHSbto5dzFXVyrfEs7KUHSkFMufKyEL3AFfV6ZHaDx/',
+      'invalid'
+    );
+    await hardhatToken.deployed();
+
+    return { HollandGene, hardhatToken, owner, addr1, addr2 };
+  }
+
+  it("mintしたらNFTがmint数分取得できていること", async function () {
+    const { hardhatToken, owner, addr1 } = await loadFixture(deployTokenFixture);
+    await hardhatToken.connect(addr1).mint(1, { value: ethers.utils.parseEther("1") });
+    const tokenIds = await hardhatToken.walletOfOwner(addr1.address);
+    expect([ ethers.BigNumber.from("1") ]).to.deep.equal(
+      tokenIds
+    );
+  });
+
+  it("ownerは0ethでmintできること", async function () {
+    const { hardhatToken, owner, addr1 } = await loadFixture(deployTokenFixture);
+    await hardhatToken.connect(owner).mint(1, { value: ethers.utils.parseEther("0") });
+    const tokenIds = await hardhatToken.walletOfOwner(owner.address);
+    expect([ ethers.BigNumber.from("1") ]).to.deep.equal(
+      tokenIds
+    );
+  });
+});
