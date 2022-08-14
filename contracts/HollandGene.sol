@@ -99,6 +99,10 @@ contract HollandGene is ERC721Enumerable, Ownable {
   function setmaxMintAmount(uint256 _newmaxMintAmount) public onlyOwner {
     maxMintAmount = _newmaxMintAmount;
   }
+
+  function setMaxSupply(uint256 _maxSupply) public onlyOwner {
+    maxSupply = _maxSupply;
+  }
   
   function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
     notRevealedUri = _notRevealedURI;
