@@ -1,6 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
+require("dotenv").config();
 
 describe("HollandGene contract", function () {
   async function deployTokenFixture() {
@@ -10,7 +11,7 @@ describe("HollandGene contract", function () {
     const hardhatToken = await HollandGene.deploy(
       'HollandGene',
       'HG',
-      'ipfs//QmZcZHSbto5dzFXVyrfEs7KUHSkFMufKyEL3AFfV6ZHaDx/',
+      process.env.IPFS_METADATA_URL,
       'invalid'
     );
     await hardhatToken.deployed();
