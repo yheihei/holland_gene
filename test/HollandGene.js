@@ -22,7 +22,7 @@ describe("HollandGene contract", function () {
   it("mintしたらNFTがmint数分取得できていること", async function () {
     const { hardhatToken, addr1 } = await loadFixture(deployTokenFixture);
     await hardhatToken.connect(addr1).mint(3, { value: ethers.utils.parseEther("1") });
-    const tokenIds = await hardhatToken.walletOfOwner(addr1.address);
+    const tokenIds = await hardhatToken.tokensOfOwner(addr1.address);
     expect(tokenIds).to.deep.equal(
       [
         ethers.BigNumber.from("1"),
@@ -32,13 +32,13 @@ describe("HollandGene contract", function () {
     );
   });
 
-  it("あるアカウントの所持tokenIdが飛び飛びになっていてもwalletOfOwnerでtokenIdのリストがとれること", async function () {
+  it("あるアカウントの所持tokenIdが飛び飛びになっていてもtokensOfOwnerでtokenIdのリストがとれること", async function () {
     const { hardhatToken, addr1, addr2 } = await loadFixture(deployTokenFixture);
     // addr1の所持tokenIdが飛び飛びになるようmint
     await hardhatToken.connect(addr1).mint(1, { value: ethers.utils.parseEther("1") });
     await hardhatToken.connect(addr2).mint(2, { value: ethers.utils.parseEther("1") });
     await hardhatToken.connect(addr1).mint(1, { value: ethers.utils.parseEther("1") });
-    expect(await hardhatToken.walletOfOwner(addr1.address)).to.deep.equal(
+    expect(await hardhatToken.tokensOfOwner(addr1.address)).to.deep.equal(
       [
         ethers.BigNumber.from("1"),
         ethers.BigNumber.from("4"),
@@ -49,7 +49,7 @@ describe("HollandGene contract", function () {
   it("ownerは0ethでmintできること", async function () {
     const { hardhatToken, owner } = await loadFixture(deployTokenFixture);
     await hardhatToken.connect(owner).mint(1, { value: ethers.utils.parseEther("0") });
-    const tokenIds = await hardhatToken.walletOfOwner(owner.address);
+    const tokenIds = await hardhatToken.tokensOfOwner(owner.address);
     expect([ ethers.BigNumber.from("1") ]).to.deep.equal(
       tokenIds
     );
