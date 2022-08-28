@@ -51,14 +51,6 @@ contract HollandGene is ERC721AQueryable, Ownable {
     _mint(msg.sender, _mintAmount);
   }
 
-  function walletOfOwner(address _owner)
-    public
-    view
-    returns (uint256[] memory)
-  {
-    return this.tokensOfOwnerIn(_owner, _startTokenId(), totalSupply() + 1);
-  }
-
   //only owner
   function reveal() public onlyOwner {
       revealed = true;
