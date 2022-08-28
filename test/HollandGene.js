@@ -21,10 +21,28 @@ describe("HollandGene contract", function () {
 
   it("mintしたらNFTがmint数分取得できていること", async function () {
     const { hardhatToken, addr1 } = await loadFixture(deployTokenFixture);
-    await hardhatToken.connect(addr1).mint(1, { value: ethers.utils.parseEther("1") });
+    await hardhatToken.connect(addr1).mint(3, { value: ethers.utils.parseEther("1") });
     const tokenIds = await hardhatToken.walletOfOwner(addr1.address);
-    expect([ ethers.BigNumber.from("1") ]).to.deep.equal(
-      tokenIds
+    expect(tokenIds).to.deep.equal(
+      [
+        ethers.BigNumber.from("1"),
+        ethers.BigNumber.from("2"),
+        ethers.BigNumber.from("3"),
+      ]
+    );
+  });
+
+  it("あるアカウントの所持tokenIdが飛び飛びになっていてもwalletOfOwnerでtokenIdのリストがとれること", async function () {
+    const { hardhatToken, addr1, addr2 } = await loadFixture(deployTokenFixture);
+    // addr1の所持tokenIdが飛び飛びになるようmint
+    await hardhatToken.connect(addr1).mint(1, { value: ethers.utils.parseEther("1") });
+    await hardhatToken.connect(addr2).mint(2, { value: ethers.utils.parseEther("1") });
+    await hardhatToken.connect(addr1).mint(1, { value: ethers.utils.parseEther("1") });
+    expect(await hardhatToken.walletOfOwner(addr1.address)).to.deep.equal(
+      [
+        ethers.BigNumber.from("1"),
+        ethers.BigNumber.from("4"),
+      ]
     );
   });
 
@@ -43,5 +61,12 @@ describe("HollandGene contract", function () {
     expect(ethers.BigNumber.from("100")).to.equal(
       await hardhatToken.maxSupply()
     );
+  });
+
+  it("Maxの供給量のset関数がowner以外だとエラーになること", async function () {
+    const { hardhatToken, addr1 } = await loadFixture(deployTokenFixture);
+    await expect(hardhatToken.connect(addr1).setMaxSupply(100)).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    )
   });
 });

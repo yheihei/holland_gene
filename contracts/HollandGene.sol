@@ -3,12 +3,10 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-// import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-// import "erc721a/contracts/ERC721A.sol";
+import "erc721a/contracts/extensions/ERC721AQueryable.sol";
 import "hardhat/console.sol";
 
-contract HollandGene is ERC721Enumerable, Ownable {
+contract HollandGene is ERC721AQueryable, Ownable {
   using Strings for uint256;
 
   string baseURI;
@@ -25,7 +23,7 @@ contract HollandGene is ERC721Enumerable, Ownable {
     string memory _symbol,
     string memory _initBaseURI,
     string memory _initNotRevealedUri
-  ) ERC721(_name, _symbol) {
+  ) ERC721A(_name, _symbol) {
     setBaseURI(_initBaseURI);
     setNotRevealedURI(_initNotRevealedUri);
   }
@@ -33,6 +31,10 @@ contract HollandGene is ERC721Enumerable, Ownable {
   // internal
   function _baseURI() internal view virtual override returns (string memory) {
     return baseURI;
+  }
+
+  function _startTokenId() internal view virtual override returns (uint256) {
+    return 1;
   }
 
   // public
@@ -46,10 +48,7 @@ contract HollandGene is ERC721Enumerable, Ownable {
     if (msg.sender != owner()) {
       require(msg.value >= cost * _mintAmount, "eth is not enough!!");
     }
-
-    for (uint256 i = 1; i <= _mintAmount; i++) {
-      _safeMint(msg.sender, supply + i);
-    }
+    _mint(msg.sender, _mintAmount);
   }
 
   function walletOfOwner(address _owner)
@@ -57,34 +56,7 @@ contract HollandGene is ERC721Enumerable, Ownable {
     view
     returns (uint256[] memory)
   {
-    uint256 ownerTokenCount = balanceOf(_owner);
-    uint256[] memory tokenIds = new uint256[](ownerTokenCount);
-    for (uint256 i; i < ownerTokenCount; i++) {
-      tokenIds[i] = tokenOfOwnerByIndex(_owner, i);
-    }
-    return tokenIds;
-  }
-
-  function tokenURI(uint256 tokenId)
-    public
-    view
-    virtual
-    override
-    returns (string memory)
-  {
-    require(
-      _exists(tokenId),
-      "ERC721Metadata: URI query for nonexistent token"
-    );
-    
-    if(revealed == false) {
-        return notRevealedUri;
-    }
-
-    string memory currentBaseURI = _baseURI();
-    return bytes(currentBaseURI).length > 0
-        ? string(abi.encodePacked(currentBaseURI, tokenId.toString(), baseExtension))
-        : "";
+    return this.tokensOfOwnerIn(_owner, _startTokenId(), totalSupply() + 1);
   }
 
   //only owner
