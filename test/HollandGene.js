@@ -50,16 +50,16 @@ describe("HollandGene contract", function () {
     const { hardhatToken, owner } = await loadFixture(deployTokenFixture);
     await hardhatToken.connect(owner).mint(1, { value: ethers.utils.parseEther("0") });
     const tokenIds = await hardhatToken.tokensOfOwner(owner.address);
-    expect([ ethers.BigNumber.from("1") ]).to.deep.equal(
-      tokenIds
+    expect(tokenIds).to.deep.equal(
+      [ ethers.BigNumber.from("1") ]
     );
   });
 
   it("Maxの供給量をpublic関数でセットできること", async function () {
     const { hardhatToken } = await loadFixture(deployTokenFixture);
     await hardhatToken.setMaxSupply(100);
-    expect(ethers.BigNumber.from("100")).to.equal(
-      await hardhatToken.maxSupply()
+    expect(await hardhatToken.maxSupply()).to.equal(
+      ethers.BigNumber.from("100")
     );
   });
 
@@ -75,7 +75,7 @@ describe("HollandGene contract", function () {
     await hardhatToken.setRevealed(true)
     await hardhatToken.connect(addr1).mint(1, { value: ethers.utils.parseEther("1") });
     const tokenURI = await hardhatToken.tokenURI(1)
-    expect('ipfs://CID/1.json').to.equal(tokenURI)
+    expect(tokenURI).to.equal('ipfs://CID/1.json')
   });
 
   it("revealedがfalseの時、mintしたらリビール前の情報が取得できること", async function () {
@@ -83,6 +83,6 @@ describe("HollandGene contract", function () {
     await hardhatToken.setRevealed(false)
     await hardhatToken.connect(addr1).mint(1, { value: ethers.utils.parseEther("1") });
     const tokenURI = await hardhatToken.tokenURI(1)
-    expect('ipfs://notRevealedUri').to.equal(tokenURI)
+    expect(tokenURI).to.equal('ipfs://notRevealedUri')
   });
 });
