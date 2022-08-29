@@ -55,6 +55,19 @@ contract HollandGene is ERC721AQueryable, Ownable {
   function reveal() public onlyOwner {
       revealed = true;
   }
+
+  function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+    if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
+
+    if (!revealed) {
+      return notRevealedUri;
+    }
+
+    string memory metadataPointerId = !revealed ? 'unrevealed' : _toString(tokenId);
+    string memory result = string(abi.encodePacked(_baseURI(), metadataPointerId, '.json'));
+
+    return bytes(_baseURI()).length != 0 ? result : '';
+  }
   
   function setCost(uint256 _newCost) public onlyOwner {
     cost = _newCost;
@@ -78,6 +91,10 @@ contract HollandGene is ERC721AQueryable, Ownable {
 
   function setBaseExtension(string memory _newBaseExtension) public onlyOwner {
     baseExtension = _newBaseExtension;
+  }
+
+  function setRevealed(bool _state) public onlyOwner {
+    revealed = _state;
   }
 
   function pause(bool _state) public onlyOwner {
