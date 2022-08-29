@@ -3,6 +3,7 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "erc721a/contracts/ERC721A.sol";
 import "erc721a/contracts/extensions/ERC721AQueryable.sol";
 import "hardhat/console.sol";
 
@@ -55,6 +56,19 @@ contract HollandGene is ERC721AQueryable, Ownable {
   function reveal() public onlyOwner {
       revealed = true;
   }
+
+  function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+    if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
+
+    if (!revealed) {
+      return notRevealedUri;
+    }
+
+    string memory metadataPointerId = !revealed ? 'unrevealed' : _toString(tokenId);
+    string memory result = string(abi.encodePacked(_baseURI(), metadataPointerId, '.json'));
+
+    return bytes(_baseURI()).length != 0 ? result : '';
+  }
   
   function setCost(uint256 _newCost) public onlyOwner {
     cost = _newCost;
@@ -78,6 +92,10 @@ contract HollandGene is ERC721AQueryable, Ownable {
 
   function setBaseExtension(string memory _newBaseExtension) public onlyOwner {
     baseExtension = _newBaseExtension;
+  }
+
+  function setRevealed(bool _state) public onlyOwner {
+    revealed = _state;
   }
 
   function pause(bool _state) public onlyOwner {

@@ -11,8 +11,8 @@ describe("HollandGene contract", function () {
     const hardhatToken = await HollandGene.deploy(
       'HollandGene',
       'HG',
-      process.env.IPFS_METADATA_URL,
-      'invalid'
+      'ipfs://CID/',
+      'ipfs://notRevealedUri'
     );
     await hardhatToken.deployed();
 
@@ -68,5 +68,21 @@ describe("HollandGene contract", function () {
     await expect(hardhatToken.connect(addr1).setMaxSupply(100)).to.be.revertedWith(
       'Ownable: caller is not the owner'
     )
+  });
+
+  it("revealedがtrueの時、mintしたらリビール前の情報が取得できること", async function () {
+    const { hardhatToken, addr1 } = await loadFixture(deployTokenFixture);
+    await hardhatToken.setRevealed(true)
+    await hardhatToken.connect(addr1).mint(1, { value: ethers.utils.parseEther("1") });
+    const tokenURI = await hardhatToken.tokenURI(1)
+    expect('ipfs://CID/1.json').to.equal(tokenURI)
+  });
+
+  it("revealedがfalseの時、mintしたらリビール前の情報が取得できること", async function () {
+    const { hardhatToken, addr1 } = await loadFixture(deployTokenFixture);
+    await hardhatToken.setRevealed(false)
+    await hardhatToken.connect(addr1).mint(1, { value: ethers.utils.parseEther("1") });
+    const tokenURI = await hardhatToken.tokenURI(1)
+    expect('ipfs://notRevealedUri').to.equal(tokenURI)
   });
 });
