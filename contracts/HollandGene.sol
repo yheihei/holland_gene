@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+/// @title: Holland Lop Generative
+/// @author: @yhei_hei
+/// @dev: This contract using HollandGene (https://github.com/yheihei/holland_gene)
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "erc721a/contracts/extensions/ERC721AQueryable.sol";
 import "hardhat/console.sol";
 
@@ -17,6 +22,7 @@ contract HollandGene is ERC721AQueryable, Ownable {
   bool public paused = false;
   bool public revealed = false;
   string public notRevealedUri;
+  bytes32 public merkleRoot;
 
   constructor(
     string memory _name,
@@ -37,18 +43,43 @@ contract HollandGene is ERC721AQueryable, Ownable {
     return 1;
   }
 
-  // public
   function mint(uint256 _mintAmount) public payable {
-    uint256 supply = totalSupply();
+    _mintValidate(msg.sender, _mintAmount, msg.value);
+    _mint(msg.sender, _mintAmount);
+  }
+
+  function preMint(uint256 _mintAmount, bytes32[] calldata _merkleProof)
+    public
+    payable
+  {
+    _mintValidate(msg.sender, _mintAmount, msg.value);
+    require(
+      isWhiteListed(msg.sender,_merkleProof),
+      "You don't have a whitelist!"
+    );
+    _mint(msg.sender, _mintAmount);
+  }
+
+  function _mintValidate(address _address, uint256 _mintAmount, uint256 ethValue)
+    private
+    view
+  {
     require(!paused);
     require(_mintAmount > 0);
     require(_mintAmount <= maxMintAmount);
-    require(supply + _mintAmount <= maxSupply);
-
-    if (msg.sender != owner()) {
-      require(msg.value >= cost * _mintAmount, "eth is not enough!!");
+    require(totalSupply() + _mintAmount <= maxSupply);
+    if (_address != owner()) {
+      require(ethValue >= cost * _mintAmount, "eth is not enough!!");
     }
-    _mint(msg.sender, _mintAmount);
+  }
+
+  function isWhiteListed(address _address, bytes32[] calldata _merkleProof)
+    public
+    view
+    returns (bool)
+  {
+    bytes32 leaf = keccak256(abi.encodePacked(_address));
+    return MerkleProof.verify(_merkleProof, merkleRoot, leaf);
   }
 
   //only owner
@@ -99,6 +130,10 @@ contract HollandGene is ERC721AQueryable, Ownable {
 
   function pause(bool _state) public onlyOwner {
     paused = _state;
+  }
+
+  function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
+    merkleRoot = _merkleRoot;
   }
  
   function withdraw() public payable onlyOwner {    
