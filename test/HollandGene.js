@@ -113,7 +113,7 @@ describe("HollandGene contract", function () {
     );
   });
 
-  it("WL未所持のアドレスがpreMintできること", async function () {
+  it("WL未所持のアドレスがpreMintできないこと", async function () {
     const { hardhatToken, addr1, addr2, addr3 } = await loadFixture(deployTokenFixture);
     const leaves = [addr1.address, addr2.address].map((x) =>
       keccak256(x)
