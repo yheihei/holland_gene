@@ -43,18 +43,34 @@ contract HollandGene is ERC721AQueryable, Ownable {
     return 1;
   }
 
-  // public
   function mint(uint256 _mintAmount) public payable {
-    uint256 supply = totalSupply();
+    _mintValidate(msg.sender, _mintAmount, msg.value);
+    _mint(msg.sender, _mintAmount);
+  }
+
+  function preMint(uint256 _mintAmount, bytes32[] calldata _merkleProof)
+    public
+    payable
+  {
+    _mintValidate(msg.sender, _mintAmount, msg.value);
+    require(
+      isWhiteListed(msg.sender,_merkleProof),
+      "You don't have a whitelist!"
+    );
+    _mint(msg.sender, _mintAmount);
+  }
+
+  function _mintValidate(address _address, uint256 _mintAmount, uint256 ethValue)
+    private
+    view
+  {
     require(!paused);
     require(_mintAmount > 0);
     require(_mintAmount <= maxMintAmount);
-    require(supply + _mintAmount <= maxSupply);
-
-    if (msg.sender != owner()) {
-      require(msg.value >= cost * _mintAmount, "eth is not enough!!");
+    require(totalSupply() + _mintAmount <= maxSupply);
+    if (_address != owner()) {
+      require(ethValue >= cost * _mintAmount, "eth is not enough!!");
     }
-    _mint(msg.sender, _mintAmount);
   }
 
   function isWhiteListed(address _address, bytes32[] calldata _merkleProof)
@@ -64,27 +80,6 @@ contract HollandGene is ERC721AQueryable, Ownable {
   {
     bytes32 leaf = keccak256(abi.encodePacked(_address));
     return MerkleProof.verify(_merkleProof, merkleRoot, leaf);
-  }
-
-  // public
-  function preMint(uint256 _mintAmount, bytes32[] calldata _merkleProof)
-    public
-    payable
-  {
-    uint256 supply = totalSupply();
-    require(!paused);
-    require(_mintAmount > 0);
-    require(_mintAmount <= maxMintAmount);
-    require(supply + _mintAmount <= maxSupply);
-    require(
-      isWhiteListed(msg.sender,_merkleProof),
-      "You don't have a whitelist!"
-    );
-
-    if (msg.sender != owner()) {
-      require(msg.value >= cost * _mintAmount, "eth is not enough!!");
-    }
-    _mint(msg.sender, _mintAmount);
   }
 
   //only owner
