@@ -24,6 +24,13 @@ contract HollandGene is ERC721AQueryable, Ownable {
   string public notRevealedUri;
   bytes32 public merkleRoot;
 
+  enum Phase {
+    BeforeMint,
+    WLSale,
+    PublicMint
+  }
+  Phase public phase = Phase.BeforeMint;
+
   constructor(
     string memory _name,
     string memory _symbol,
@@ -44,14 +51,16 @@ contract HollandGene is ERC721AQueryable, Ownable {
   }
 
   function mint(uint256 _mintAmount) public payable {
+    require(phase == Phase.PublicMint, 'Public mint is not active.');
     _mintValidate(msg.sender, _mintAmount, msg.value);
     _mint(msg.sender, _mintAmount);
   }
 
-  function preMint(uint256 _mintAmount, bytes32[] calldata _merkleProof)
+  function wlMint(uint256 _mintAmount, bytes32[] calldata _merkleProof)
     public
     payable
   {
+    require(phase == Phase.WLSale, 'WL mint is not active.');
     _mintValidate(msg.sender, _mintAmount, msg.value);
     require(
       isWhiteListed(msg.sender,_merkleProof),
@@ -134,6 +143,10 @@ contract HollandGene is ERC721AQueryable, Ownable {
 
   function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
     merkleRoot = _merkleRoot;
+  }
+
+  function setPhase(Phase _newPhase) public onlyOwner {
+    phase = _newPhase;
   }
  
   function withdraw() public payable onlyOwner {    

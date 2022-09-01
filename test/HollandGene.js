@@ -17,6 +17,8 @@ describe("HollandGene contract", function () {
       'ipfs://notRevealedUri'
     );
     await hardhatToken.deployed();
+    // public saleにしておく
+    await hardhatToken.setPhase(2)
 
     return { HollandGene, hardhatToken, owner, addr1, addr2, addr3 };
   }
@@ -88,8 +90,10 @@ describe("HollandGene contract", function () {
     expect(tokenURI).to.equal('ipfs://notRevealedUri')
   });
 
-  it("WL所持済みのアドレスがpreMintできること", async function () {
+  it("WL所持済みのアドレスがwlMintできること", async function () {
     const { hardhatToken, addr1, addr2 } = await loadFixture(deployTokenFixture);
+    // WL saleにしておく
+    await hardhatToken.setPhase(1);
     const leaves = [addr1.address, addr2.address].map((x) =>
       keccak256(x)
     )
@@ -98,7 +102,7 @@ describe("HollandGene contract", function () {
     rootTree = tree.getRoot()
     await hardhatToken.setMerkleRoot(rootTree)
 
-    await hardhatToken.connect(addr1).preMint(
+    await hardhatToken.connect(addr1).wlMint(
       1,
       /**
        * そのアドレスのproofはMerkleTreeを持った外部に問い合わせてもいいし、
@@ -113,8 +117,10 @@ describe("HollandGene contract", function () {
     );
   });
 
-  it("WL未所持のアドレスがpreMintできないこと", async function () {
+  it("WL未所持のアドレスがwlMintできないこと", async function () {
     const { hardhatToken, addr1, addr2, addr3 } = await loadFixture(deployTokenFixture);
+    // WL saleにしておく
+    await hardhatToken.setPhase(1);
     const leaves = [addr1.address, addr2.address].map((x) =>
       keccak256(x)
     )
@@ -124,11 +130,39 @@ describe("HollandGene contract", function () {
     await hardhatToken.setMerkleRoot(rootTree)
 
     await expect(
-      hardhatToken.connect(addr3).preMint(
+      hardhatToken.connect(addr3).wlMint(
         1,
         tree.getHexProof(keccak256(addr3.address)),
         { value: ethers.utils.parseEther("1") }
       )
     ).to.be.revertedWith("You don't have a whitelist!")
   });
+
+  it("PublicSaleでない場合mint関数がエラーとなること", async function () {
+    const { hardhatToken, addr1 } = await loadFixture(deployTokenFixture);
+    // sale前にしておく
+    await hardhatToken.setPhase(0);
+    await expect(
+      hardhatToken.connect(addr1).mint(3, { value: ethers.utils.parseEther("1") })
+    ).to.revertedWith('Public mint is not active.');
+  })
+
+  it("WLSaleでない場合wlMint関数がエラーとなること", async function () {
+    const { hardhatToken, addr1, addr2 } = await loadFixture(deployTokenFixture);
+    // sale前にしておく
+    await hardhatToken.setPhase(0);
+    const leaves = [addr1.address, addr2.address].map((x) =>
+      keccak256(x)
+    )
+    // WL登録
+    const tree = new MerkleTree(leaves, keccak256, { sortPairs: true })
+    rootTree = tree.getRoot()
+    await hardhatToken.setMerkleRoot(rootTree)
+
+    await expect(hardhatToken.connect(addr1).wlMint(
+      1,
+      tree.getHexProof(keccak256(addr1.address)),
+      { value: ethers.utils.parseEther("1") }
+    )).to.revertedWith('WL mint is not active.');
+  })
 });
