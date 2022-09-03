@@ -20,6 +20,7 @@ contract HollandGene is ERC721AQueryable, Ownable {
   string public baseExtension = ".json";
   uint256 public cost = 0.0005 ether;
   uint256 public maxSupply = 30;
+  uint256 public maxBurnMintSupply = 5;
   uint256 public maxMintAmount = 3;
   bool public paused = false;
   bool public revealed = false;
@@ -77,6 +78,10 @@ contract HollandGene is ERC721AQueryable, Ownable {
     payable
   {
     require(phase == Phase.BurnAndMint, 'BurnAndMint mint is not active.');
+    require(
+      _totalBurned() + _burnTokenIds.length <= maxBurnMintSupply,
+      'Over total burn count.'
+    );
     for (uint256 i = 0; i < _burnTokenIds.length; i++) {
       uint256 tokenId = _burnTokenIds[i];
       require(
@@ -86,8 +91,6 @@ contract HollandGene is ERC721AQueryable, Ownable {
       _burn(tokenId);
     }
     _mint(msg.sender, _burnTokenIds.length);
-    console.log(_totalBurned());
-    console.log(totalSupply());
   }
 
   function _mintValidate(address _address, uint256 _mintAmount, uint256 ethValue)
