@@ -232,4 +232,11 @@ describe("バーニン系機能", function () {
       nftContract.connect(addr1).burnAndMint([1, 2], { value: ethers.utils.parseEther("1") })
     ).to.revertedWith('BurnAndMint mint is not active.');
   })
+
+  it("所有していないNFTをBurnしようとした場合にエラーとなること", async function () {
+    const { nftContract, addr1 } = await loadFixture(deployTokenFixture);
+    await expect(
+      nftContract.connect(addr1).burnAndMint([11], { value: ethers.utils.parseEther("1") })
+    ).to.revertedWith('tokenId 11 is not your NFT.');
+  })
 });

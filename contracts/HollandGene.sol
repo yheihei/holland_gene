@@ -79,8 +79,10 @@ contract HollandGene is ERC721AQueryable, Ownable {
     require(phase == Phase.BurnAndMint, 'BurnAndMint mint is not active.');
     for (uint256 i = 0; i < _burnTokenIds.length; i++) {
       uint256 tokenId = _burnTokenIds[i];
-      if (_msgSender() != ownerOf(tokenId)) revert BurnAndLimitedMintCallerNotOwner();
-
+      require(
+        msg.sender == ownerOf(tokenId),
+        string(abi.encodePacked('tokenId ', tokenId.toString(), ' is not your NFT.'))
+      );
       _burn(tokenId);
     }
     _mint(msg.sender, _burnTokenIds.length);
