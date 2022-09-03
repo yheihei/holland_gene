@@ -254,4 +254,11 @@ describe("バーニン系機能", function () {
       nftContract.connect(addr1).burnAndMint([1, 2, 3, 4], { value: ethers.utils.parseEther("1") })
     ).to.revertedWith('Cannot above 3 burn per 1 mint.');
   })
+
+  it("ETHのcostが足りない場合バーニンできないこと", async function () {
+    const { nftContract, addr1 } = await loadFixture(deployTokenFixture);
+    await expect(
+      nftContract.connect(addr1).burnAndMint([1, 2], { value: ethers.utils.parseEther("0.0009") })
+    ).to.revertedWith('eth is not enough!!');
+  })
 });
