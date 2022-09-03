@@ -22,6 +22,7 @@ contract HollandGene is ERC721AQueryable, Ownable {
   uint256 public maxSupply = 30;
   uint256 public maxBurnMintSupply = 5;
   uint256 public maxMintAmount = 3;
+  uint256 public maxBurnMintAmount = 3;
   bool public paused = false;
   bool public revealed = false;
   string public notRevealedUri;
@@ -81,6 +82,10 @@ contract HollandGene is ERC721AQueryable, Ownable {
     require(
       _totalBurned() + _burnTokenIds.length <= maxBurnMintSupply,
       'Over total burn count.'
+    );
+    require(
+      _burnTokenIds.length <= maxBurnMintAmount,
+      string(abi.encodePacked('Cannot above ', maxBurnMintAmount.toString(), ' burn per 1 mint.'))
     );
     for (uint256 i = 0; i < _burnTokenIds.length; i++) {
       uint256 tokenId = _burnTokenIds[i];
