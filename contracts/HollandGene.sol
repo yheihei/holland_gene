@@ -81,6 +81,10 @@ contract HollandGene is ERC721AQueryable, Ownable {
   {
     require(phase == Phase.BurnAndMint, 'BurnAndMint mint is not active.');
     require(
+      _burnTokenIds.length > 0,
+      'Burn tokenIds count shoud be exceed 1.'
+    );
+    require(
       _totalBurned() + _burnTokenIds.length <= maxBurnMintSupply,
       'Over total burn count.'
     );

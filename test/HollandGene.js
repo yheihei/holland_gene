@@ -261,4 +261,11 @@ describe("バーニン系機能", function () {
       nftContract.connect(addr1).burnAndMint([1, 2], { value: ethers.utils.parseEther("0.0009") })
     ).to.revertedWith('eth is not enough!!');
   })
+
+  it("バーニン数が0の場合エラーとなること", async function () {
+    const { nftContract, addr1 } = await loadFixture(deployTokenFixture);
+    await expect(
+      nftContract.connect(addr1).burnAndMint([], { value: ethers.utils.parseEther("1") })
+    ).to.revertedWith('Burn tokenIds count shoud be exceed 1.');
+  })
 });
