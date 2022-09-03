@@ -29,7 +29,8 @@ contract HollandGene is ERC721AQueryable, Ownable {
   enum Phase {
     BeforeMint,
     WLSale,
-    PublicMint
+    PublicMint,
+    BurnAndMint
   }
   Phase public phase = Phase.BeforeMint;
 
@@ -75,6 +76,7 @@ contract HollandGene is ERC721AQueryable, Ownable {
     external
     payable
   {
+    require(phase == Phase.BurnAndMint, 'BurnAndMint mint is not active.');
     for (uint256 i = 0; i < _burnTokenIds.length; i++) {
       uint256 tokenId = _burnTokenIds[i];
       if (_msgSender() != ownerOf(tokenId)) revert BurnAndLimitedMintCallerNotOwner();

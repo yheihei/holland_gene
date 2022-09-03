@@ -181,7 +181,7 @@ describe("バーニン系機能", function () {
     await nftContract.deployed();
 
     // public saleにしておく
-    await nftContract.setPhase(2)
+    await nftContract.setPhase(2);
     // addr1, 2, 3それぞれ10個ずつNFTをもった状態にしておく
     await nftContract.connect(addr1).mint(3, { value: ethers.utils.parseEther("1") });
     await nftContract.connect(addr1).mint(3, { value: ethers.utils.parseEther("1") });
@@ -197,6 +197,9 @@ describe("バーニン系機能", function () {
     await nftContract.connect(addr3).mint(3, { value: ethers.utils.parseEther("1") });
     await nftContract.connect(addr3).mint(3, { value: ethers.utils.parseEther("1") });
     await nftContract.connect(addr3).mint(1, { value: ethers.utils.parseEther("1") });
+
+    // BurnAndMint saleにしておく
+    await nftContract.setPhase(3);
 
     return { HollandGene, nftContract, owner, addr1, addr2, addr3 };
   }
@@ -220,4 +223,13 @@ describe("バーニン系機能", function () {
       ]
     );
   });
+
+  it("BurnAndMintでない場合burnAndMint関数がエラーとなること", async function () {
+    const { nftContract, addr1 } = await loadFixture(deployTokenFixture);
+    // sale前にしておく
+    await nftContract.setPhase(0);
+    await expect(
+      nftContract.connect(addr1).burnAndMint([1, 2], { value: ethers.utils.parseEther("1") })
+    ).to.revertedWith('BurnAndMint mint is not active.');
+  })
 });
