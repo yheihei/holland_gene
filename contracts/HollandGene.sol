@@ -11,6 +11,8 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "erc721a/contracts/extensions/ERC721AQueryable.sol";
 import "hardhat/console.sol";
 
+error BurnAndLimitedMintCallerNotOwner();
+
 contract HollandGene is ERC721AQueryable, Ownable {
   using Strings for uint256;
 
@@ -67,6 +69,21 @@ contract HollandGene is ERC721AQueryable, Ownable {
       "You don't have a whitelist!"
     );
     _mint(msg.sender, _mintAmount);
+  }
+
+  function burnAndMint(uint256[] memory _burnTokenIds)
+    external
+    payable
+  {
+    for (uint256 i = 0; i < _burnTokenIds.length; i++) {
+      uint256 tokenId = _burnTokenIds[i];
+      if (_msgSender() != ownerOf(tokenId)) revert BurnAndLimitedMintCallerNotOwner();
+
+      _burn(tokenId);
+    }
+    _mint(msg.sender, _burnTokenIds.length);
+    console.log(_totalBurned());
+    console.log(totalSupply());
   }
 
   function _mintValidate(address _address, uint256 _mintAmount, uint256 ethValue)
