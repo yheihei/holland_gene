@@ -59,7 +59,7 @@ contract HollandGene is ERC721AQueryable, Ownable {
   function mint(uint256 _mintAmount) public payable {
     require(phase == Phase.PublicMint, 'Public mint is not active.');
     _mintValidate(msg.sender, _mintAmount, msg.value);
-    _mint(msg.sender, _mintAmount);
+    _safeMint(msg.sender, _mintAmount);
   }
 
   function wlMint(uint256 _mintAmount, bytes32[] calldata _merkleProof)
@@ -68,17 +68,49 @@ contract HollandGene is ERC721AQueryable, Ownable {
   {
     require(phase == Phase.WLSale, 'WL mint is not active.');
     _mintValidate(msg.sender, _mintAmount, msg.value);
-    require(
-      isWhiteListed(msg.sender,_merkleProof),
-      "You don't have a whitelist!"
-    );
-    _mint(msg.sender, _mintAmount);
+    _wlMintValidate(msg.sender, _mintAmount, _merkleProof, msg.value);
+    _safeMint(msg.sender, _mintAmount);
   }
 
-  function burnAndMint(uint256[] memory _burnTokenIds)
+  function burnAndMint(uint256[] calldata _burnTokenIds)
     external
     payable
   {
+    
+    _burnAndMintValidate(_burnTokenIds, msg.value);
+    _validateAndBurn(msg.sender, _burnTokenIds);
+    _safeMint(msg.sender, _burnTokenIds.length);
+  }
+
+  function _mintValidate(address _address, uint256 _mintAmount, uint256 _ethValue)
+    private
+    view
+  {
+    require(!paused);
+    require(_mintAmount > 0);
+    require(_mintAmount <= maxMintAmount);
+    require(totalSupply() + _mintAmount <= maxSupply);
+    if (_address != owner()) {
+      require(_ethValue >= cost * _mintAmount, "eth is not enough!!");
+    }
+  }
+
+  function _wlMintValidate(address _address, uint256 _mintAmount,  bytes32[] calldata _merkleProof, uint256 _ethValue)
+    private
+    view
+  {
+    _mintValidate(_address, _mintAmount, _ethValue);
+    require(
+      isWhiteListed(_address, _merkleProof),
+      "You don't have a whitelist!"
+    );
+  }
+
+  function _burnAndMintValidate(uint256[] calldata _burnTokenIds, uint256 _ethValue)
+    private
+    view
+  {
+    require(!paused);
     require(phase == Phase.BurnAndMint, 'BurnAndMint mint is not active.');
     require(
       _burnTokenIds.length > 0,
@@ -93,30 +125,21 @@ contract HollandGene is ERC721AQueryable, Ownable {
       string(abi.encodePacked('Cannot above ', maxBurnMintAmount.toString(), ' burn per 1 mint.'))
     );
     require(
-      msg.value >= _burnTokenIds.length * burnMintCost,
+      _ethValue >= _burnTokenIds.length * burnMintCost,
       'eth is not enough!!'
     );
+  }
+
+  function _validateAndBurn(address _address, uint256[] calldata _burnTokenIds)
+    private
+  {
     for (uint256 i = 0; i < _burnTokenIds.length; i++) {
       uint256 tokenId = _burnTokenIds[i];
       require(
-        msg.sender == ownerOf(tokenId),
+        _address == ownerOf(tokenId),
         string(abi.encodePacked('tokenId ', tokenId.toString(), ' is not your NFT.'))
       );
       _burn(tokenId);
-    }
-    _mint(msg.sender, _burnTokenIds.length);
-  }
-
-  function _mintValidate(address _address, uint256 _mintAmount, uint256 ethValue)
-    private
-    view
-  {
-    require(!paused);
-    require(_mintAmount > 0);
-    require(_mintAmount <= maxMintAmount);
-    require(totalSupply() + _mintAmount <= maxSupply);
-    if (_address != owner()) {
-      require(ethValue >= cost * _mintAmount, "eth is not enough!!");
     }
   }
 
