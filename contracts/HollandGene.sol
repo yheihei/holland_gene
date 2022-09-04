@@ -11,8 +11,6 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "erc721a/contracts/extensions/ERC721AQueryable.sol";
 import "hardhat/console.sol";
 
-error BurnAndLimitedMintCallerNotOwner();
-
 contract HollandGene is ERC721AQueryable, Ownable {
   using Strings for uint256;
 
@@ -67,7 +65,6 @@ contract HollandGene is ERC721AQueryable, Ownable {
     payable
   {
     require(phase == Phase.WLSale, 'WL mint is not active.');
-    _mintValidate(msg.sender, _mintAmount, msg.value);
     _wlMintValidate(msg.sender, _mintAmount, _merkleProof, msg.value);
     _safeMint(msg.sender, _mintAmount);
   }
@@ -76,9 +73,7 @@ contract HollandGene is ERC721AQueryable, Ownable {
     external
     payable
   {
-    
-    _burnAndMintValidate(_burnTokenIds, msg.value);
-    _validateAndBurn(msg.sender, _burnTokenIds);
+    _validateAndBurn(msg.sender, _burnTokenIds, msg.value);
     _safeMint(msg.sender, _burnTokenIds.length);
   }
 
@@ -130,9 +125,10 @@ contract HollandGene is ERC721AQueryable, Ownable {
     );
   }
 
-  function _validateAndBurn(address _address, uint256[] calldata _burnTokenIds)
+  function _validateAndBurn(address _address, uint256[] calldata _burnTokenIds, uint256 _ethValue)
     private
   {
+    _burnAndMintValidate(_burnTokenIds, _ethValue);
     for (uint256 i = 0; i < _burnTokenIds.length; i++) {
       uint256 tokenId = _burnTokenIds[i];
       require(
