@@ -218,11 +218,7 @@ contract HollandGene is ERC721AQueryable, Ownable {
   }
  
   function withdraw() public payable onlyOwner {    
-    // This will payout the owner 95% of the contract balance.
-    // Do not remove this otherwise you will not be able to withdraw the funds.
-    // =============================================================================
     (bool os, ) = payable(owner()).call{value: address(this).balance}("");
     require(os);
-    // =============================================================================
   }
 }

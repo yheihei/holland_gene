@@ -316,3 +316,30 @@ describe("バーニン系機能", function () {
     )
   });
 });
+
+describe("withdrawのテスト", function () {
+  async function deployTokenFixture() {
+    const HollandGene = await ethers.getContractFactory("HollandGene");
+    const [owner, addr1, addr2, addr3] = await ethers.getSigners();
+
+    const nftContract = await HollandGene.deploy(
+      'HollandGene',
+      'HG',
+      'ipfs://CID/',
+      'ipfs://notRevealedUri'
+    );
+    await nftContract.deployed();
+    await nftContract.setPhase(2)
+
+    return { HollandGene, nftContract, owner, addr1, addr2, addr3 };
+  }
+
+  it("withdrawしたらコントラクトに溜まっているETHが引き出せること", async function () {
+    const { nftContract, owner, addr1 } = await loadFixture(deployTokenFixture);
+    await nftContract.connect(addr1).mint(2, { value: ethers.utils.parseEther("0.001") });
+    const beforeOwnerBalance = await ethers.provider.getBalance(owner.address);
+    await nftContract.withdraw();
+    const currentOwnerBalance = await ethers.provider.getBalance(owner.address);
+    expect(beforeOwnerBalance < currentOwnerBalance).to.equal(true);
+  });
+});
