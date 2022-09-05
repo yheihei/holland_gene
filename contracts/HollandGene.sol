@@ -73,6 +73,7 @@ contract HollandGene is ERC721AQueryable, Ownable {
     external
     payable
   {
+    require(phase == Phase.BurnAndMint, 'BurnAndMint mint is not active.');
     _validateAndBurn(msg.sender, _burnTokenIds, msg.value);
     _safeMint(msg.sender, _burnTokenIds.length);
   }
@@ -106,7 +107,6 @@ contract HollandGene is ERC721AQueryable, Ownable {
     view
   {
     require(!paused);
-    require(phase == Phase.BurnAndMint, 'BurnAndMint mint is not active.');
     require(
       _burnTokenIds.length > 0,
       'Burn tokenIds count shoud be exceed 1.'
@@ -148,7 +148,6 @@ contract HollandGene is ERC721AQueryable, Ownable {
     return MerkleProof.verify(_merkleProof, merkleRoot, leaf);
   }
 
-  //only owner
   function reveal() public onlyOwner {
       revealed = true;
   }
@@ -204,6 +203,18 @@ contract HollandGene is ERC721AQueryable, Ownable {
 
   function setPhase(Phase _newPhase) public onlyOwner {
     phase = _newPhase;
+  }
+
+  function setMaxBurnMintSupply(uint256 _value) public onlyOwner {
+    maxBurnMintSupply = _value;
+  }
+
+  function setMaxBurnMintAmount(uint256 _value) public onlyOwner {
+    maxBurnMintAmount = _value;
+  }
+
+  function setBurnMintCost(uint256 _value) public onlyOwner {
+    burnMintCost = _value;
   }
  
   function withdraw() public payable onlyOwner {    

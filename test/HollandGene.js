@@ -224,7 +224,7 @@ describe("バーニン系機能", function () {
     );
   });
 
-  it("BurnAndMintでない場合burnAndMint関数がエラーとなること", async function () {
+  it("BurnAndMintのPhaseでない場合burnAndMint関数がエラーとなること", async function () {
     const { nftContract, addr1 } = await loadFixture(deployTokenFixture);
     // sale前にしておく
     await nftContract.setPhase(0);
@@ -268,4 +268,51 @@ describe("バーニン系機能", function () {
       nftContract.connect(addr1).burnAndMint([], { value: ethers.utils.parseEther("1") })
     ).to.revertedWith('Burn tokenIds count shoud be exceed 1.');
   })
+
+  it("Maxのバーニンの供給量をpublic関数でセットできること", async function () {
+    const { nftContract } = await loadFixture(deployTokenFixture);
+    await nftContract.setMaxBurnMintSupply(10);
+    expect(await nftContract.maxBurnMintSupply()).to.equal(
+      10n
+    );
+  });
+
+  it("Maxのバーニンの供給量のset関数がowner以外だとエラーになること", async function () {
+    const { nftContract, addr1 } = await loadFixture(deployTokenFixture);
+    await expect(nftContract.connect(addr1).setMaxBurnMintSupply(10)).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    )
+  });
+
+  it("Maxの1mintあたりのバーニン数限界をpublic関数でセットできること", async function () {
+    const { nftContract } = await loadFixture(deployTokenFixture);
+    await nftContract.setMaxBurnMintAmount(10);
+    expect(await nftContract.maxBurnMintAmount()).to.equal(
+      10n
+    );
+  });
+
+  it("Maxの1mintあたりのバーニン数限界のset関数がowner以外だとエラーになること", async function () {
+    const { nftContract, addr1 } = await loadFixture(deployTokenFixture);
+    await expect(nftContract.connect(addr1).setMaxBurnMintAmount(10)).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    )
+  });
+
+  it("1mintあたりのバーニンコストをpublic関数でセットできること", async function () {
+    const { nftContract, addr1 } = await loadFixture(deployTokenFixture);
+    await nftContract.setBurnMintCost(400000000000000n);
+    expect(await nftContract.burnMintCost()).to.equal(
+      400000000000000n
+    );
+    await expect(nftContract.connect(addr1).burnAndMint([1], { value: ethers.utils.parseEther("0.00039") }))
+      .to.be.revertedWith('eth is not enough!!')
+  });
+
+  it("1mintあたりのバーニンコストのset関数がowner以外だとエラーになること", async function () {
+    const { nftContract, addr1 } = await loadFixture(deployTokenFixture);
+    await expect(nftContract.connect(addr1).setBurnMintCost(400000000000000n)).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    )
+  });
 });
