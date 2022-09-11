@@ -16,7 +16,7 @@ contract HollandGene is ERC721AQueryable, Ownable {
 
   string baseURI;
   string public baseExtension = ".json";
-  uint256 public cost = 0.0005 ether;
+  uint256 public cost = 0.001 ether;
   uint256 public maxSupply = 30;
   uint256 public maxBurnMintSupply = 5;
   uint256 public maxMintAmount = 3;

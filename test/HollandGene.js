@@ -336,7 +336,7 @@ describe("withdrawのテスト", function () {
 
   it("withdrawしたらコントラクトに溜まっているETHが引き出せること", async function () {
     const { nftContract, owner, addr1 } = await loadFixture(deployTokenFixture);
-    await nftContract.connect(addr1).mint(2, { value: ethers.utils.parseEther("0.001") });
+    await nftContract.connect(addr1).mint(2, { value: ethers.utils.parseEther("0.002") });
     const beforeOwnerBalance = await ethers.provider.getBalance(owner.address);
     await nftContract.withdraw();
     const currentOwnerBalance = await ethers.provider.getBalance(owner.address);

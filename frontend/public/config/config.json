@@ -1,0 +1,18 @@
+{
+  "CONTRACT_ADDRESS": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+  "SCAN_LINK": "http://127.0.0.1:8545/token/0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+  "NETWORK": {
+    "NAME": "Localhost8545",
+    "SYMBOL": "GO",
+    "ID": 31337
+  },
+  "NFT_NAME": "HollandGene",
+  "SYMBOL": "HG",
+  "MAX_SUPPLY": 30,
+  "WEI_COST": 1000000000000000,
+  "DISPLAY_COST": 0.001,
+  "GAS_LIMIT": 285000,
+  "MARKETPLACE": "Opeansea",
+  "MARKETPLACE_LINK": "https://opensea.io/collection/holland-lop-gene",
+  "SHOW_BACKGROUND": false
+}
