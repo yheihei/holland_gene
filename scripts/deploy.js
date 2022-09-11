@@ -1,0 +1,26 @@
+require("dotenv").config();
+
+async function main() {
+  const [deployer] = await ethers.getSigners();
+
+  console.log("Deploying contracts with the account:", deployer.address);
+
+  console.log("Account balance:", (await deployer.getBalance()).toString());
+
+  const Token = await ethers.getContractFactory("HollandGene");
+  const token = await Token.deploy(
+    'HollandGene',
+    'HG',
+    process.env.IPFS_METADATA_URL,
+    process.env.IPFS_METADATA_NOT_REVEALED_URL
+  );
+
+  console.log("Token address:", token.address);
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
