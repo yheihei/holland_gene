@@ -13,7 +13,7 @@ async function main() {
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
   // デプロイしたコントラクトのアドレスを入れる
-  const contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+  const contractAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
   // コントラクトのabiを入れる
   const contractAbi = [
     {
@@ -1087,8 +1087,9 @@ async function main() {
     deployer
   )
   console.log("contract address:", nftContract.address);
-  // public saleにしておく
-  await nftContract.setPhase(2);
+  // 任意のsaleにしておく
+  await nftContract.setPhase(1);
+  console.log(await nftContract.phase());
 }
 
 main()

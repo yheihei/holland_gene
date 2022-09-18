@@ -4,6 +4,8 @@ import { connect } from "./redux/blockchain/blockchainActions";
 import { fetchData } from "./redux/data/dataActions";
 import * as s from "./styles/globalStyles";
 import styled from "styled-components";
+const { MerkleTree } = require('merkletreejs')
+const { keccak256 } = require('@ethersproject/keccak256')  // npm install --save keccak256
 
 const truncate = (input, len) =>
   input.length > len ? `${input.substring(0, len)}...` : input;
@@ -118,6 +120,7 @@ function App() {
     MARKETPLACE: "",
     MARKETPLACE_LINK: "",
     SHOW_BACKGROUND: false,
+    PHASE: "BeforeMint",
   });
 
   const claimNFTs = () => {
@@ -129,28 +132,64 @@ function App() {
     console.log("Gas limit: ", totalGasLimit);
     setFeedback(`Minting your ${CONFIG.NFT_NAME}...`);
     setClaimingNft(true);
-    blockchain.smartContract.methods
-      .mint(mintAmount)
-      .send({
-        gasLimit: String(totalGasLimit),
-        to: CONFIG.CONTRACT_ADDRESS,
-        from: blockchain.account,
-        value: totalCostWei,
-        gasPrice: Math.floor(blockchain.gasPrice * (1.05 ** mintAmount)),
-      })
-      .once("error", (err) => {
-        console.log(err);
-        setFeedback("Sorry, something went wrong please try again later.");
-        setClaimingNft(false);
-      })
-      .then((receipt) => {
-        console.log(receipt);
-        setFeedback(
-          `WOW, the ${CONFIG.NFT_NAME} is yours! go visit Opensea.io to view it.`
-        );
-        setClaimingNft(false);
-        dispatch(fetchData(blockchain.account));
-      });
+    if (CONFIG.PHASE === 'WLSale') {
+      const leaves = [].map((x) =>
+        keccak256(x)
+      )
+      const tree = new MerkleTree(leaves, keccak256, { sortPairs: true })
+      console.log('WLSale mint!!!!')
+      console.log(blockchain.account)
+      blockchain.smartContract.methods
+        .wlMint(
+          mintAmount,
+          tree.getHexProof(keccak256(blockchain.account))
+        )
+        .send({
+          gasLimit: String(totalGasLimit),
+          to: CONFIG.CONTRACT_ADDRESS,
+          from: blockchain.account,
+          value: totalCostWei,
+          gasPrice: Math.floor(blockchain.gasPrice * (1.05 ** mintAmount)),
+        })
+        .once("error", (err) => {
+          console.log(err);
+          console.log(err.message);
+          setFeedback("Sorry, something went wrong please try again later.");
+          setClaimingNft(false);
+        })
+        .then((receipt) => {
+          console.log(receipt);
+          setFeedback(
+            `WOW, the ${CONFIG.NFT_NAME} is yours! go visit Opensea.io to view it.`
+          );
+          setClaimingNft(false);
+          dispatch(fetchData(blockchain.account));
+        });
+    } else {
+      blockchain.smartContract.methods
+        .mint(mintAmount)
+        .send({
+          gasLimit: String(totalGasLimit),
+          to: CONFIG.CONTRACT_ADDRESS,
+          from: blockchain.account,
+          value: totalCostWei,
+          gasPrice: Math.floor(blockchain.gasPrice * (1.05 ** mintAmount)),
+        })
+        .once("error", (err) => {
+          console.log(err);
+          console.log(err.message);
+          setFeedback("Sorry, something went wrong please try again later.");
+          setClaimingNft(false);
+        })
+        .then((receipt) => {
+          console.log(receipt);
+          setFeedback(
+            `WOW, the ${CONFIG.NFT_NAME} is yours! go visit Opensea.io to view it.`
+          );
+          setClaimingNft(false);
+          dispatch(fetchData(blockchain.account));
+        });
+    }
   };
 
   const decrementMintAmount = () => {
