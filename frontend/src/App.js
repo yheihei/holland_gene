@@ -121,6 +121,7 @@ function App() {
     MARKETPLACE_LINK: "",
     SHOW_BACKGROUND: false,
     PHASE: "BeforeMint",
+    WHITELIST: [],
   });
 
   const claimNFTs = () => {
@@ -133,7 +134,7 @@ function App() {
     setFeedback(`Minting your ${CONFIG.NFT_NAME}...`);
     setClaimingNft(true);
     if (CONFIG.PHASE === 'WLSale') {
-      const leaves = [].map((x) =>
+      const leaves = CONFIG.WHITELIST.map((x) =>
         keccak256(x)
       )
       const tree = new MerkleTree(leaves, keccak256, { sortPairs: true })
