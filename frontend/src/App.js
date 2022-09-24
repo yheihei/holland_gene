@@ -123,6 +123,7 @@ function App() {
     PHASE: "BeforeMint",
     WHITELIST: [],
   });
+  const [merkleProof, setMerkleProof] = useState([]);
 
   const claimNFTs = () => {
     let cost = CONFIG.WEI_COST;
@@ -134,16 +135,12 @@ function App() {
     setFeedback(`Minting your ${CONFIG.NFT_NAME}...`);
     setClaimingNft(true);
     if (CONFIG.PHASE === 'WLSale') {
-      const leaves = CONFIG.WHITELIST.map((x) =>
-        keccak256(x)
-      )
-      const tree = new MerkleTree(leaves, keccak256, { sortPairs: true })
       console.log('WLSale mint!!!!')
       console.log(blockchain.account)
       blockchain.smartContract.methods
         .wlMint(
           mintAmount,
-          tree.getHexProof(keccak256(blockchain.account))
+          merkleProof
         )
         .send({
           gasLimit: String(totalGasLimit),
@@ -215,6 +212,14 @@ function App() {
     }
   };
 
+  const setWLData = (account) => {
+    const leaves = CONFIG.WHITELIST.map((x) =>
+      keccak256(x)
+    )
+    const tree = new MerkleTree(leaves, keccak256, { sortPairs: true })
+    setMerkleProof(tree.getHexProof(keccak256(account)))
+  };
+
   const getConfig = async () => {
     const configResponse = await fetch("/config/config.json", {
       headers: {
@@ -232,7 +237,34 @@ function App() {
 
   useEffect(() => {
     getData();
-  }, [blockchain.account]);
+    if (blockchain.account) {
+      setWLData(blockchain.account)
+    }
+  }, [blockchain.account])
+
+  useEffect(() => {
+    if (!blockchain.account) {
+      return
+    }
+    if (CONFIG.PHASE !== 'WLSale') {
+      return
+    }
+
+    blockchain.smartContract.methods
+      .isWhiteListed(
+        blockchain.account,
+        merkleProof
+      )
+      .call()
+      .then((isWhiteListed) => {
+        if (isWhiteListed) {
+          setFeedback('You are whitelisted! Buy!')
+        } else {
+          setFeedback("You don't have whitelist!")
+          setClaimingNft(true)
+        }
+      })
+  }, [merkleProof])
 
   return (
     <s.Screen>
