@@ -12,13 +12,14 @@ const truncate = (input, len) =>
 
 export const StyledButton = styled.button`
   padding: 10px;
-  border-radius: 50px;
+  border-radius: 8px;
   border: none;
   background-color: var(--secondary);
   padding: 10px;
   font-weight: bold;
+  font-size: 1.5rem;
   color: var(--secondary-text);
-  width: 100px;
+  width: 240px;
   cursor: pointer;
   box-shadow: 0px 6px 0px -2px rgba(250, 250, 250, 0.3);
   -webkit-box-shadow: 0px 6px 0px -2px rgba(250, 250, 250, 0.3);
@@ -132,11 +133,9 @@ function App() {
     let totalGasLimit = String(gasLimit * mintAmount);
     console.log("Cost: ", totalCostWei);
     console.log("Gas limit: ", totalGasLimit);
-    setFeedback(`Minting your ${CONFIG.NFT_NAME}...`);
+    setFeedback(`ミント中です...`);
     setClaimingNft(true);
     if (CONFIG.PHASE === 'WLSale') {
-      console.log('WLSale mint!!!!')
-      console.log(blockchain.account)
       blockchain.smartContract.methods
         .wlMint(
           mintAmount,
@@ -152,13 +151,13 @@ function App() {
         .once("error", (err) => {
           console.log(err);
           console.log(err.message);
-          setFeedback("Sorry, something went wrong please try again later.");
+          setFeedback("不明なエラーです");
           setClaimingNft(false);
         })
         .then((receipt) => {
           console.log(receipt);
           setFeedback(
-            `WOW, the ${CONFIG.NFT_NAME} is yours! go visit Opensea.io to view it.`
+            `${CONFIG.NFT_NAME}が購入できました！`
           );
           setClaimingNft(false);
           dispatch(fetchData(blockchain.account));
@@ -176,13 +175,13 @@ function App() {
         .once("error", (err) => {
           console.log(err);
           console.log(err.message);
-          setFeedback("Sorry, something went wrong please try again later.");
+          setFeedback("不明なエラーです");
           setClaimingNft(false);
         })
         .then((receipt) => {
           console.log(receipt);
           setFeedback(
-            `WOW, the ${CONFIG.NFT_NAME} is yours! go visit Opensea.io to view it.`
+            `${CONFIG.NFT_NAME}が購入できました！`
           );
           setClaimingNft(false);
           dispatch(fetchData(blockchain.account));
@@ -192,7 +191,7 @@ function App() {
 
   const decrementMintAmount = () => {
     let newMintAmount = mintAmount - 1;
-    if (newMintAmount > 1) {
+    if (newMintAmount < 1) {
       newMintAmount = 1;
     }
     setMintAmount(newMintAmount);
@@ -273,9 +272,9 @@ function App() {
       .call()
       .then((isWhiteListed) => {
         if (isWhiteListed) {
-          setFeedback('You are whitelisted! Buy!')
+          setFeedback('WL取得済みウォレットです')
         } else {
-          setFeedback("You don't have whitelist!")
+          setFeedback("WLがありません。接続したウォレットが正しいか確認ください")
           setClaimingNft(true)
         }
       })
@@ -289,11 +288,10 @@ function App() {
         style={{ padding: 24, backgroundColor: "var(--primary)" }}
         image={CONFIG.SHOW_BACKGROUND ? "/config/images/bg.png" : null}
       >
-        <StyledLogo alt={"logo"} src={"/config/images/logo.png"} />
         <s.SpacerSmall />
         <ResponsiveWrapper flex={1} style={{ padding: 24 }} test>
           <s.Container flex={1} jc={"center"} ai={"center"}>
-            <StyledImg alt={"example"} src={"/config/images/example.gif"} />
+            <StyledImg alt={"example"} src={"/config/images/holland_logo.png"} />
           </s.Container>
           <s.SpacerLarge />
           <s.Container
@@ -318,16 +316,6 @@ function App() {
             >
               {data.totalSupply} / {CONFIG.MAX_SUPPLY}
             </s.TextTitle>
-            <s.TextDescription
-              style={{
-                textAlign: "center",
-                color: "var(--primary-text)",
-              }}
-            >
-              <StyledLink target={"_blank"} href={CONFIG.SCAN_LINK}>
-                {truncate(CONFIG.CONTRACT_ADDRESS, 15)}
-              </StyledLink>
-            </s.TextDescription>
             <s.SpacerSmall />
             {Number(data.totalSupply) >= CONFIG.MAX_SUPPLY ? (
               <>
@@ -351,15 +339,10 @@ function App() {
                 <s.TextTitle
                   style={{ textAlign: "center", color: "var(--accent-text)" }}
                 >
-                  1 {CONFIG.SYMBOL} costs {CONFIG.DISPLAY_COST}{" "}
-                  {CONFIG.NETWORK.SYMBOL}.
+                  1 {CONFIG.SYMBOL} / {CONFIG.DISPLAY_COST}{" "}
+                  {CONFIG.NETWORK.SYMBOL}
                 </s.TextTitle>
                 <s.SpacerXSmall />
-                <s.TextDescription
-                  style={{ textAlign: "center", color: "var(--accent-text)" }}
-                >
-                  Excluding gas fees.
-                </s.TextDescription>
                 <s.SpacerSmall />
                 {blockchain.account === "" ||
                 blockchain.smartContract === null ? (
@@ -370,8 +353,9 @@ function App() {
                         color: "var(--accent-text)",
                       }}
                     >
-                      Connect to the {CONFIG.NETWORK.NAME} network
+                      ネットワーク:{CONFIG.NETWORK.NAME}
                     </s.TextDescription>
+                    <s.SpacerSmall />
                     <s.SpacerSmall />
                     <StyledButton
                       onClick={(e) => {
@@ -380,7 +364,7 @@ function App() {
                         getData();
                       }}
                     >
-                      CONNECT
+                      ウォレット接続
                     </StyledButton>
                     {blockchain.errorMsg !== "" ? (
                       <>
@@ -439,6 +423,7 @@ function App() {
                       </StyledRoundButton>
                     </s.Container>
                     <s.SpacerSmall />
+                    <s.SpacerSmall />
                     <s.Container ai={"center"} jc={"center"} fd={"row"}>
                       <StyledButton
                         disabled={claimingNft ? 1 : 0}
@@ -448,7 +433,7 @@ function App() {
                           getData();
                         }}
                       >
-                        {claimingNft ? "BUSY" : "BUY"}
+                        {claimingNft ? "停止中" : "購入する"}
                       </StyledButton>
                     </s.Container>
                   </>
@@ -461,35 +446,11 @@ function App() {
           <s.Container flex={1} jc={"center"} ai={"center"}>
             <StyledImg
               alt={"example"}
-              src={"/config/images/example.gif"}
-              style={{ transform: "scaleX(-1)" }}
+              src={"/config/images/holland_logo.png"}
             />
           </s.Container>
         </ResponsiveWrapper>
         <s.SpacerMedium />
-        <s.Container jc={"center"} ai={"center"} style={{ width: "70%" }}>
-          <s.TextDescription
-            style={{
-              textAlign: "center",
-              color: "var(--primary-text)",
-            }}
-          >
-            Please make sure you are connected to the right network (
-            {CONFIG.NETWORK.NAME} Mainnet) and the correct address. Please note:
-            Once you make the purchase, you cannot undo this action.
-          </s.TextDescription>
-          <s.SpacerSmall />
-          <s.TextDescription
-            style={{
-              textAlign: "center",
-              color: "var(--primary-text)",
-            }}
-          >
-            We have set the gas limit to {CONFIG.GAS_LIMIT} for the contract to
-            successfully mint your NFT. We recommend that you don't lower the
-            gas limit.
-          </s.TextDescription>
-        </s.Container>
       </s.Container>
     </s.Screen>
   );
