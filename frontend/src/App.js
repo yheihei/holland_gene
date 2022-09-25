@@ -231,6 +231,20 @@ function App() {
     SET_CONFIG(config);
   };
 
+  const syncTotalSupply = () => {
+    if (!blockchain.account) {
+      return
+    }
+    dispatch(fetchData(blockchain.account));
+  }
+
+  /**
+   * 定期的に総mint数を更新して表示する
+   */
+  const syncStartMintAmount = () => {
+    setInterval(syncTotalSupply, 7000)
+  }
+
   useEffect(() => {
     getConfig();
   }, []);
@@ -239,6 +253,7 @@ function App() {
     getData();
     if (blockchain.account) {
       setWLData(blockchain.account)
+      syncStartMintAmount()
     }
   }, [blockchain.account])
 
