@@ -102,7 +102,13 @@ function App() {
   const blockchain = useSelector((state) => state.blockchain);
   const data = useSelector((state) => state.data);
   const [claimingNft, setClaimingNft] = useState(false);
-  const [feedback, setFeedback] = useState(`Click buy to mint your NFT.`);
+  const [feedback, setFeedback] = useState(``);
+  const [phaseLabel, setPhaseLabel] = useState('');
+  const PHASE_BEFORE_MINT = 0
+  const PHASE_WL_SALE = 1
+  const PHASE_PUBLIC_MINT = 2
+  const PHASE_BURN_AND_MINT = 3
+  const [phase, setPhase] = useState(PHASE_BEFORE_MINT);
   const [mintAmount, setMintAmount] = useState(1);
   const [CONFIG, SET_CONFIG] = useState({
     CONTRACT_ADDRESS: "",
@@ -231,6 +237,7 @@ function App() {
   };
 
   const syncTotalSupply = () => {
+    console.log('syncTotalSupply')
     if (!blockchain.account) {
       return
     }
@@ -244,6 +251,15 @@ function App() {
     setInterval(syncTotalSupply, 7000)
   }
 
+  const getPhase = async () => {
+    let _phase = await blockchain
+      .smartContract
+      .methods
+      .phase()
+      .call();
+    setPhase(Number(_phase))
+  }
+
   useEffect(() => {
     getConfig();
   }, []);
@@ -251,10 +267,27 @@ function App() {
   useEffect(() => {
     getData();
     if (blockchain.account) {
+      getPhase()
       setWLData(blockchain.account)
       syncStartMintAmount()
     }
   }, [blockchain.account])
+
+  useEffect(() => {
+    if (phase === PHASE_BEFORE_MINT) {
+      setPhaseLabel('セール前です')
+      setClaimingNft(true)
+    } else if (phase === PHASE_WL_SALE) {
+      setPhaseLabel('WLセール中です')
+      setClaimingNft(false)
+    } else if (phase === PHASE_PUBLIC_MINT) {
+      setPhaseLabel('パブリックセール中です')
+      setClaimingNft(false)
+    } else if (phase === PHASE_BURN_AND_MINT) {
+      setPhaseLabel('バーニン中です')
+      setClaimingNft(false)
+    }
+  }, [phase])
 
   useEffect(() => {
     if (!blockchain.account) {
@@ -322,13 +355,8 @@ function App() {
                 <s.TextTitle
                   style={{ textAlign: "center", color: "var(--accent-text)" }}
                 >
-                  The sale has ended.
+                  セールは終了しました
                 </s.TextTitle>
-                <s.TextDescription
-                  style={{ textAlign: "center", color: "var(--accent-text)" }}
-                >
-                  You can still find {CONFIG.NFT_NAME} on
-                </s.TextDescription>
                 <s.SpacerSmall />
                 <StyledLink target={"_blank"} href={CONFIG.MARKETPLACE_LINK}>
                   {CONFIG.MARKETPLACE}
@@ -382,6 +410,15 @@ function App() {
                   </s.Container>
                 ) : (
                   <>
+                    <s.TextDescription
+                      style={{
+                        textAlign: "center",
+                        color: "var(--accent-text)",
+                      }}
+                    >
+                      {phaseLabel}
+                    </s.TextDescription>
+                    <s.SpacerMedium />
                     <s.TextDescription
                       style={{
                         textAlign: "center",
