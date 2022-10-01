@@ -237,7 +237,6 @@ function App() {
   };
 
   const syncTotalSupply = () => {
-    console.log('syncTotalSupply')
     if (!blockchain.account) {
       return
     }
