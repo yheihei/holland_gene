@@ -141,7 +141,7 @@ function App() {
     console.log("Gas limit: ", totalGasLimit);
     setFeedback(`ミント中です...`);
     setClaimingNft(true);
-    if (CONFIG.PHASE === 'WLSale') {
+    if (phase === PHASE_WL_SALE) {
       blockchain.smartContract.methods
         .wlMint(
           mintAmount,
@@ -267,7 +267,6 @@ function App() {
     getData();
     if (blockchain.account) {
       getPhase()
-      setWLData(blockchain.account)
       syncStartMintAmount()
     }
   }, [blockchain.account])
@@ -278,7 +277,7 @@ function App() {
       setClaimingNft(true)
     } else if (phase === PHASE_WL_SALE) {
       setPhaseLabel('WLセール中です')
-      setClaimingNft(false)
+      setWLData(blockchain.account)
     } else if (phase === PHASE_PUBLIC_MINT) {
       setPhaseLabel('パブリックセール中です')
       setClaimingNft(false)
@@ -292,7 +291,7 @@ function App() {
     if (!blockchain.account) {
       return
     }
-    if (CONFIG.PHASE !== 'WLSale') {
+    if (phase !== PHASE_WL_SALE) {
       return
     }
 
@@ -305,6 +304,7 @@ function App() {
       .then((isWhiteListed) => {
         if (isWhiteListed) {
           setFeedback('WL取得済みウォレットです')
+          setClaimingNft(false)
         } else {
           setFeedback("WLがありません。接続したウォレットが正しいか確認ください")
           setClaimingNft(true)
