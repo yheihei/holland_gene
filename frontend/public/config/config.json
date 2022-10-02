@@ -15,7 +15,6 @@
   "MARKETPLACE": "Opeansea",
   "MARKETPLACE_LINK": "https://testnets.opensea.io/collection/hollandgene",
   "SHOW_BACKGROUND": false,
-  "PHASE": "WLSale",
   "WHITELIST": [
     "0x72A1241a02b45c63cd2731A9136Fe44FcD781AA1",
     "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
