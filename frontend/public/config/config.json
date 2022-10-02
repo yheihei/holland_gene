@@ -1,10 +1,10 @@
 {
-  "CONTRACT_ADDRESS": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-  "SCAN_LINK": "http://127.0.0.1:8545/token/0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "CONTRACT_ADDRESS": "0x7e0Be1240c953c1967d896076d6a372f413B35dd",
+  "SCAN_LINK": "https://goerli.etherscan.io/address/0x7e0Be1240c953c1967d896076d6a372f413B35dd",
   "NETWORK": {
-    "NAME": "Localhost8545",
-    "SYMBOL": "GO",
-    "ID": 31337
+    "NAME": "Goeril",
+    "SYMBOL": "GoerliETH",
+    "ID": 5
   },
   "NFT_NAME": "HollandGene",
   "SYMBOL": "HG",
@@ -13,11 +13,12 @@
   "DISPLAY_COST": 0.001,
   "GAS_LIMIT": 285000,
   "MARKETPLACE": "Opeansea",
-  "MARKETPLACE_LINK": "https://opensea.io/collection/holland-lop-gene",
+  "MARKETPLACE_LINK": "https://testnets.opensea.io/collection/holland-lop-gene",
   "SHOW_BACKGROUND": false,
   "PHASE": "WLSale",
   "WHITELIST": [
     "0x72A1241a02b45c63cd2731A9136Fe44FcD781AA1",
-    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "0x4c13F5E6a4100c8E66FB1B9c77362E7582908F08"
   ]
 }
