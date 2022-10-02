@@ -292,7 +292,7 @@ function App() {
     if (!blockchain.account) {
       return
     }
-    if (CONFIG.PHASE !== 'WLSale') {
+    if (CONFIG.PHASE !== PHASE_WL_SALE) {
       return
     }
 
